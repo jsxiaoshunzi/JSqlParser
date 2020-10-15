@@ -4408,6 +4408,8 @@ List<String> CreateParameter():
 	        |
             tk=<K_DESC> { param.add(tk.image); }
             |
+            tk=<K_FIRST> { param.add(tk.image); }
+            |
 	    tk="::" colDataType = ColDataType() { param.add(tk.image); param.add(colDataType.toString()); }
         )
     {return param;}
@@ -4470,6 +4472,16 @@ List<String> ColumnsNamesList():
          ( "," img=ColumnsNamesListItem() { retval.add(img); } )*
 
     ")"
+    {
+        return retval;
+    }
+}
+
+List<String> ColumnsNamesListEmpty():
+{
+    List<String> retval = new ArrayList<String>();
+}
+{
     {
         return retval;
     }
@@ -4659,7 +4671,7 @@ AlterExpression AlterExpression():
             ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setFkColumns(columnNames); columnNames = null; }
                  <K_REFERENCES> tk=<S_IDENTIFIER> [ columnNames=ColumnsNamesList() ]
                         { alterExp.setFkSourceTable(tk.image); alterExp.setFkSourceColumns(columnNames); }
-                                
+
                 [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
                         		  { alterExp.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
                                   )]
@@ -4685,7 +4697,7 @@ AlterExpression AlterExpression():
                         fkIndex.withTable(fkTable).withReferencedColumnNames(columnNames);
                         alterExp.setIndex(fkIndex);
                     }
-                                
+
                 [LOOKAHEAD(2) (<K_ON> (tk=<K_DELETE> | tk=<K_UPDATE>) action = Action()
                         		  { fkIndex.setReferentialAction(ReferentialAction.Type.valueOf(tk.image), action); }
                                   )]
@@ -4744,9 +4756,9 @@ AlterExpression AlterExpression():
                              )
             )
             |
-            ( sk3=RelObjectName() <K_COMMENT> 
-                tk=<S_CHAR_LITERAL> { 
-                    alterExp.withColumnName(sk3).withCommentText(tk.image); 
+            ( sk3=RelObjectName() <K_COMMENT>
+                tk=<S_CHAR_LITERAL> {
+                    alterExp.withColumnName(sk3).withCommentText(tk.image);
                 }
             )
           )
@@ -4780,6 +4792,10 @@ AlterExpression AlterExpression():
                   [tk=<K_CASCADE> { alterExp.addParameters(tk.image); } ]
 
                )
+               |
+                 LOOKAHEAD(2) (
+                                     <K_PRIMARY> <K_KEY> columnNames=ColumnsNamesListEmpty() { alterExp.setPkColumns(columnNames); }
+                                 )
                |
                (  tk=<K_INDEX>
                   (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>)
