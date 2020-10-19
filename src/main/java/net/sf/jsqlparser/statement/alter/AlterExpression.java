@@ -57,6 +57,8 @@ public class AlterExpression {
     private List<String> parameters;
     private String commentText;
 
+    private String newTableName;
+
     public String getCommentText() {
         return commentText;
     }
@@ -659,5 +661,13 @@ public class AlterExpression {
             return columnName + " DROP"
                     + (withNot ? " NOT " : " ") + "NULL";
         }
+    }
+
+    public String getNewTableName() {
+        return newTableName;
+    }
+
+    public void setNewTableName(String newTableName) {
+        this.newTableName = newTableName;
     }
 }

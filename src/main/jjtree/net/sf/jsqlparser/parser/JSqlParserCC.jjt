@@ -4107,14 +4107,14 @@ CreateTable CreateTable():
                 )
                 |
                 LOOKAHEAD(3) ( {tk=null;}
-                     [ tk=<K_UNIQUE> ] [ tk3=<K_FULLTEXT> ] tk2=<K_KEY>
+                     [ tk=<K_UNIQUE> ] [ tk3=<K_FULLTEXT> ] [ tk2=<K_KEY> | tk2=<K_INDEX> ]
                         sk3=RelObjectName()
                         /* colNames=ColumnsNamesList() */
                         colNames = ColumnNamesWithParamsList()
                         ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                         {
                             index = new Index()
-                            .withType((tk!=null?tk.image + " ":"") + (tk3!=null?tk3.image + " ":"") + tk2.image)
+                            .withType((tk!=null?tk.image + " ":"") + (tk3!=null?tk3.image + " ":"") + (tk2!=null?tk2.image + " ":""))
                             .withName(sk3)
                             .withColumns(colNames)
                             .withIndexSpec(idxSpec);
@@ -4529,7 +4529,7 @@ Truncate Truncate():
     Table table;
 }
 {
-    <K_TRUNCATE> <K_TABLE>
+    <K_TRUNCATE> [<K_TABLE>]
 	table=Table() { truncate.setTable(table); truncate.setCascade(false); } [ <K_CASCADE> {truncate.setCascade(true);} ]
     {
         return truncate;
@@ -4824,10 +4824,8 @@ AlterExpression AlterExpression():
       |
       (<K_RENAME> {alterExp.setOperation(AlterOperation.RENAME);}
         (
-          <K_COLUMN>
-          (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setColOldName(tk.image);}
-           (<K_TO>)
-          (tk2=<S_IDENTIFIER>    | tk2=<S_QUOTED_IDENTIFIER>) { alterExp.setColumnName(tk2.image);}
+          [<K_TO>]
+          (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setNewTableName(tk.image);}
         )
       )
       |

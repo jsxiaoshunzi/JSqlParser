@@ -1,17 +1,21 @@
-package com.jdjr.dbsync.common.gtid;
+/*-
+ * #%L
+ * JSQLParser library
+ * %%
+ * Copyright (C) 2004 - 2020 JSQLParser
+ * %%
+ * Dual licensed under GNU LGPL 2.1 or Apache License 2.0
+ * #L%
+ */
+package net.sf.jsqlparser.test;
 
-import com.jdjr.cds.binlog.parser.alter.*;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.Alter;
-import net.sf.jsqlparser.statement.alter.AlterExpression;
-import net.sf.jsqlparser.statement.create.table.Index;
 import org.junit.Test;
 
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @Author: caoguoshun@jd.com
@@ -49,4 +53,35 @@ public class DDLTest {
         Statement parse = CCJSqlParserUtil.parse(new StringReader(sql));
         System.out.println(parse);
     }
+
+
+    @Test
+    public void alterTableRename() throws JSQLParserException{
+        String sql="ALTER TABLE `time_check` \n" +
+                "RENAME  `time_check_new` ,\n" +
+                "COMMENT '我的注释'";
+        Statement parse = CCJSqlParserUtil.parse(new StringReader(sql));
+        System.out.println(parse);
+    }
+
+    @Test
+    public void  createTable() throws JSQLParserException{
+        String sql="CREATE TABLE `new_table` (\n" +
+                "`id`  int NOT NULL ,\n" +
+                "`field1`  varchar(255) NOT NULL DEFAULT 'field1' COMMENT 'comment nothing else' ,\n" +
+                "`field2`  varchar(255) NULL DEFAULT NULL COMMENT 'comment nothing else2' ,\n" +
+                "`index_field_1`  bigint NULL ,\n" +
+                "`index_filed_2`  bigint NULL ,\n" +
+                "PRIMARY KEY (`id`),\n" +
+                "UNIQUE `index_1` (`index_field_1`) ,\n" +
+                "UNIQUE KEY `index_1` (`index_field_1`) ,\n" +
+                "UNIQUE INDEX `index_1` (`index_field_1`) ,\n" +
+                "INDEX `index_2` (`index_filed_2`, `index_field_1`)\n" +
+                ")\n" +
+                "COMMENT='table comment'";
+        Statement parse = CCJSqlParserUtil.parse(new StringReader(sql));
+        System.out.println(parse);
+
+    }
+
 }
