@@ -54,6 +54,7 @@ import net.sf.jsqlparser.statement.execute.*;
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.statement.show.*;
 import net.sf.jsqlparser.statement.truncate.*;
+import net.sf.jsqlparser.statement.rename.*;
 import net.sf.jsqlparser.statement.update.*;
 import net.sf.jsqlparser.statement.upsert.*;
 import net.sf.jsqlparser.statement.merge.*;
@@ -495,6 +496,8 @@ Statement SingleStatement() :
         stm = Drop()
         |
         stm = Truncate()
+        |
+        stm = Rename()
         |
         stm = Execute()
         |
@@ -4533,6 +4536,22 @@ Truncate Truncate():
 	table=Table() { truncate.setTable(table); truncate.setCascade(false); } [ <K_CASCADE> {truncate.setCascade(true);} ]
     {
         return truncate;
+    }
+}
+
+Rename Rename():
+{
+    Rename rename = new Rename();
+    rename.setType("TABLE");
+    Table table;
+}
+{
+    <K_RENAME> <K_TABLE>
+	table=Table() { rename.setOldTable(table);}
+	<K_TO>
+	table=Table() { rename.setNewTable(table);}
+    {
+        return rename;
     }
 }
 

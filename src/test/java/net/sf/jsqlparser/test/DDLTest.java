@@ -65,6 +65,13 @@ public class DDLTest {
     }
 
     @Test
+    public void rename() throws JSQLParserException {
+        String sql="RENAME TABLE s1.new_table3 to s1.new_table3_rename";
+        Statement parse = CCJSqlParserUtil.parse(new StringReader(sql));
+        System.out.println(parse);
+    }
+
+    @Test
     public void  createTable() throws JSQLParserException{
         String sql="CREATE TABLE `new_table` (\n" +
                 "`id`  int NOT NULL ,\n" +
