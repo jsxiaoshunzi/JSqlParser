@@ -143,7 +143,7 @@ public class DDLTest {
                 "UNIQUE  (`index_field_1`) USING BTREE,\n" +
                 "UNIQUE  KEY(`index_field_1`) USING HASH COMMENT 'hash',\n" +
                 "UNIQUE INDEX (`index_field_1`) COMMENT 'ssss',\n" +
-                "INDEX `index_2` (`index_filed_2`, `index_field_1`) USING BTREE ) COMMENT 'table comment'";
+                "KEY `index_2` (`index_filed_2`, `index_field_1`) USING BTREE ) COMMENT 'table comment'";
         Statement parse = CCJSqlParserUtil.parse(new StringReader(sql));
         System.out.println(parse);
     }

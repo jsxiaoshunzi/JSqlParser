@@ -4137,7 +4137,7 @@ CreateTable CreateTable():
                 LOOKAHEAD(3) (
                     {
                         index = new NamedConstraint();
-                        idxSpec.clear();
+                        idxSpec.clear();tk=null;tk2=null;tk3=null;
                     }
                     [<K_CONSTRAINT> sk3=RelObjectName() {index.setName(sk3);} ]
 
@@ -4153,7 +4153,7 @@ CreateTable CreateTable():
                         }
                 )
                 |
-                LOOKAHEAD(3) ( {tk=null;idxSpec.clear();}
+                LOOKAHEAD(3) ( {tk=null;tk2=null;tk3=null;idxSpec.clear();}
                      [ tk=<K_UNIQUE> ] [ tk3=<K_FULLTEXT> ] [ tk2=<K_KEY> | tk2=<K_INDEX> ]
                         sk3=RelObjectName()
                         /* colNames=ColumnsNamesList() */
@@ -4161,7 +4161,7 @@ CreateTable CreateTable():
                         ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                         {
                             index = new Index()
-                            .withType((tk!=null?tk.image + " ":"") + (tk3!=null?tk3.image + " ":"") + (tk2!=null?tk2.image + " ":""))
+                            .withType((tk!=null?tk.image + " ":"") + (tk3!=null?tk3.image + " ":"") + (tk2!=null?tk2.image :""))
                             .withName(sk3)
                             .withColumns(colNames)
                             .withIndexSpec(idxSpec);
