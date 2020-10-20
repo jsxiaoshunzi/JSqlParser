@@ -34,12 +34,38 @@ public class DDLTest {
     public void indexTest() throws JSQLParserException {
         String sql="ALTER TABLE `hello`.`time_check`\n" +
                 "ADD INDEX index_name4 using btree(field1),\n" +
-                "ADD INDEX (field1)  using btree,\n" +
+                "ADD INDEX (field1) ,\n" +
                 "ADD KEY index_name4 using btree(field1),\n" +
                 "ADD INDEX  using btree(field1),\n" +
                 "ADD KEY  using btree(field1),\n" +
                 "ADD UNIQUE  using btree(field1),\n" +
                 "ADD UNIQUE  KEY using btree(field1),\n" +
+                "ADD UNIQUE  INDEX using btree(field1),\n" +
+                "ADD UNIQUE (field1)  using btree,\n" +
+                "ADD UNIQUE KEY (field1)  using btree,\n" +
+                "ADD UNIQUE INDEX (field1)  using btree,\n" +
+                "ADD UNIQUE INDEX index_name8 using btree(field1),\n" +
+                "ADD UNIQUE KEY index_name8 using btree(field1),\n" +
+                "ADD UNIQUE  index_name9 using btree(field1),\n" +
+                "ADD INDEX `index_1` (`name`(2), `field1`, `field2`) USING BTREE";
+        Statement parse = CCJSqlParserUtil.parse(new StringReader(sql));
+        Alter alter= (Alter) parse;
+
+    }
+
+    @Test
+    public void indexWithCommentTest() throws JSQLParserException {
+        String sql="ALTER TABLE `hello`.`time_check`\n" +
+                "ADD PRIMARY KEY  USING BTREE(`id`, `field1`) COMMENT 'hash comment',\n" +
+                "ADD PRIMARY KEY (`id`, `field1`) USING BTREE COMMENT 'hash comment',\n" +
+                "ADD PRIMARY KEY (`id`, `field1`)  COMMENT 'hash comment' USING BTREE,\n" +
+                "ADD INDEX index_name4 using btree(field1),\n" +
+                "ADD INDEX (field1)  using btree,\n" +
+                "ADD KEY index_name4 using btree(field1),\n" +
+                "ADD INDEX  using btree(field1),\n" +
+                "ADD KEY  using btree(field1),\n" +
+                "ADD UNIQUE  using btree(field1) COMMENT 'hash comment',\n" +
+                "ADD UNIQUE  KEY using btree(field1) COMMENT 'hash comment',\n" +
                 "ADD UNIQUE  INDEX using btree(field1),\n" +
                 "ADD UNIQUE (field1)  using btree,\n" +
                 "ADD UNIQUE KEY (field1)  using btree,\n" +

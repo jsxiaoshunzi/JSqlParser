@@ -1367,6 +1367,38 @@ String RelObjectName() :
 	}
 }
 
+List<String> CreateParameterAlterTable():
+{
+    Token tk = null;
+    List<String> param = new ArrayList<String>();
+}
+{
+        (
+
+            tk=<K_COMMENT> { param.add(tk.image);}
+            [<K_EQUALS>]
+            tk=<S_CHAR_LITERAL> { param.add(tk.image); }
+			|
+            tk=<K_USING> { param.add(tk.image); }
+            (tk=<K_BTREE> {param.add(tk.image);}  |tk=<K_HASH> {param.add(tk.image);} )
+        )*
+    {return param;}
+}
+
+List<String> CreateParameterAlterTableWithoutUsing():
+{
+    Token tk = null;
+    List<String> param = new ArrayList<String>();
+}
+{
+        (
+            tk=<K_COMMENT> {param.add(tk.image);}
+            [<K_EQUALS>]
+            tk=<S_CHAR_LITERAL> { param.add(tk.image); }
+        )*
+    {return param;}
+}
+
 String RelObjectNameWithoutStart() :
 {    Token tk = null; String result = null; }
 {
@@ -4675,6 +4707,7 @@ AlterExpression AlterExpression():
     String sk4 = null;
     ColDataType dataType;
     List<String> columnNames = null;
+    List<String> params=null;
     List<ConstraintState> constraints = null;
     ForeignKeyIndex fkIndex = null;
     Index index = null;
@@ -4690,21 +4723,27 @@ AlterExpression AlterExpression():
         ((<K_ADD>    { alterExp.setOperation(AlterOperation.ADD); } | <K_ALTER>    { alterExp.setOperation(AlterOperation.ALTER); } | <K_MODIFY> { alterExp.setOperation(AlterOperation.MODIFY); })
         (
                   LOOKAHEAD(2) (
-                      <K_PRIMARY> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setPkColumns(columnNames); }
-                  ) constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-                  [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
+                      <K_PRIMARY> <K_KEY>
+                  )
+            [ <K_LEFT_PARENTHESIS> columnNames=ColumnsNamesListWithOutParenthesis() <K_RIGHT_PARENTHESIS>  constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); } params=CreateParameterAlterTable() ]
+            [ constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); } <K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4);}  <K_LEFT_PARENTHESIS> columnNames=ColumnsNamesListWithOutParenthesis() <K_RIGHT_PARENTHESIS> params=CreateParameterAlterTableWithoutUsing() ]
+              {
+                    alterExp.setPkColumns(columnNames);
+                    alterExp.addParametersList(params);
+              }
                   |
             LOOKAHEAD(2) (
               (tk=<K_KEY> { alterExp.setUk(true); } | tk=<K_INDEX>)
               (tk=<S_IDENTIFIER> {sk3=tk.image; }| tk=<S_QUOTED_IDENTIFIER> {sk3=tk.image; })?
 
-              [ <K_LEFT_PARENTHESIS> columnNames=ColumnsNamesListWithOutParenthesis() <K_RIGHT_PARENTHESIS>  constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); } [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4);}] ]
+              [ <K_LEFT_PARENTHESIS> columnNames=ColumnsNamesListWithOutParenthesis() <K_RIGHT_PARENTHESIS>  constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); } params=CreateParameterAlterTable()  ]
 
-              [ constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); } <K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4);}  <K_LEFT_PARENTHESIS> columnNames=ColumnsNamesListWithOutParenthesis() <K_RIGHT_PARENTHESIS> ]
+              [ constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); } <K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4);}  <K_LEFT_PARENTHESIS> columnNames=ColumnsNamesListWithOutParenthesis() <K_RIGHT_PARENTHESIS> params=CreateParameterAlterTableWithoutUsing() ]
 
               {
                 index = new Index().withType(tk.image).withName(sk3).withColumnsNames(columnNames);
                 alterExp.setIndex(index);
+                alterExp.addParametersList(params);
               }
             )
                     |
@@ -4721,11 +4760,12 @@ AlterExpression AlterExpression():
             |
             ( <K_UNIQUE> ( (<K_KEY> { alterExp.setUk(true); }  ) | <K_INDEX> )?
              ((tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setUkName(tk.image); })?
-             [ <K_LEFT_PARENTHESIS> columnNames=ColumnsNamesListWithOutParenthesis() <K_RIGHT_PARENTHESIS>   [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4);}] ]
-             [ <K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4);}  <K_LEFT_PARENTHESIS> columnNames=ColumnsNamesListWithOutParenthesis() <K_RIGHT_PARENTHESIS> ]
+             [ <K_LEFT_PARENTHESIS> columnNames=ColumnsNamesListWithOutParenthesis() <K_RIGHT_PARENTHESIS>  params=CreateParameterAlterTable() ]
+             [ <K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4);}  <K_LEFT_PARENTHESIS> columnNames=ColumnsNamesListWithOutParenthesis() <K_RIGHT_PARENTHESIS> params=CreateParameterAlterTableWithoutUsing() ]
 
              {
                 alterExp.setUkColumns(columnNames);
+                alterExp.addParametersList(params);
               }
               )
             |

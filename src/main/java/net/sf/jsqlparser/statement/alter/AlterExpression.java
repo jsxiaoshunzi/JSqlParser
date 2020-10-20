@@ -322,6 +322,12 @@ public class AlterExpression {
         parameters.addAll(Arrays.asList(params));
     }
 
+    public void addParametersList(List<String> params) {
+        if (parameters == null) {
+            parameters = new ArrayList<>();
+        }
+        parameters.addAll(params);
+    }
     public List<String> getParameters() {
         return parameters;
     }
