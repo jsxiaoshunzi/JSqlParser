@@ -122,6 +122,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
     <K_ACTION: "ACTION">
 |   <K_ADD:"ADD">
 |   <K_ADVANCE:"ADVANCE">
+|   <K_AFTER:"AFTER">
 |   <K_AGAINST:"AGAINST">
 |   <K_ALGORITHM: "ALGORITHM">
 |   <K_ALL:"ALL">
@@ -4463,6 +4464,8 @@ List<String> CreateParameter():
             tk=<K_DESC> { param.add(tk.image); }
             |
             tk=<K_FIRST> { param.add(tk.image); }
+            |
+            tk=<K_AFTER> { param.add(tk.image); }    (tk=<S_QUOTED_IDENTIFIER> { param.add(tk.image); } | tk=<S_IDENTIFIER> { param.add(tk.image); })
             |
 	    tk="::" colDataType = ColDataType() { param.add(tk.image); param.add(colDataType.toString()); }
         )+
