@@ -109,7 +109,11 @@ public class Index {
     }
 
     public void setType(String string) {
-        type = string;
+        if (string!=null) {
+            type=string.trim();
+        } else {
+            type = string;
+        }
     }
 
     public String getUsing() {
