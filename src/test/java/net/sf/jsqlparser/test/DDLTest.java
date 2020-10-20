@@ -31,16 +31,20 @@ public class DDLTest {
     @Test
     public void indexTest() throws JSQLParserException {
         String sql="ALTER TABLE `hello`.`time_check`\n" +
-                "CHANGE COLUMN `field1` `field2`  varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL AFTER `name`,\n" +
-                "ADD COLUMN `field1`  varchar(255) NULL AFTER `name`,ADD COLUMN `field11`  varchar(255) NULL AFTER `name`,\n" +
-                "ADD COLUMN `firsst`  varchar(255) NULL FIRST ,\n" +
-                "MODIFY COLUMN `field1`  varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL AFTER `name`,\n" +
-                "DROP PRIMARY KEY ,\n" +
-                "ADD PRIMARY KEY (`id`, `firsst`),\n" +
-                "DROP INDEX `unique` ,\n" +
-                "ADD UNIQUE INDEX `unique` (`id`, `create_time`),\n" +
-                "DROP COLUMN `field2`,\n" +
-                "DROP INDEX `index_1` ,\n" +
+                "ADD INDEX index_name4 using btree(field1),\n" +
+                "ADD INDEX (field1)  using btree,\n" +
+                "ADD KEY index_name4 using btree(field1),\n" +
+                "ADD INDEX  using btree(field1),\n" +
+                "ADD KEY  using btree(field1),\n" +
+                "ADD UNIQUE  using btree(field1),\n" +
+                "ADD UNIQUE  KEY using btree(field1),\n" +
+                "ADD UNIQUE  INDEX using btree(field1),\n" +
+                "ADD UNIQUE (field1)  using btree,\n" +
+                "ADD UNIQUE KEY (field1)  using btree,\n" +
+                "ADD UNIQUE INDEX (field1)  using btree,\n" +
+                "ADD UNIQUE INDEX index_name8 using btree(field1),\n" +
+                "ADD UNIQUE KEY index_name8 using btree(field1),\n" +
+                "ADD UNIQUE  index_name9 using btree(field1),\n" +
                 "ADD INDEX `index_1` (`name`(2), `field1`, `field2`) USING BTREE";
         Statement parse = CCJSqlParserUtil.parse(new StringReader(sql));
         Alter alter= (Alter) parse;
@@ -89,6 +93,17 @@ public class DDLTest {
         Statement parse = CCJSqlParserUtil.parse(new StringReader(sql));
         System.out.println(parse);
 
+    }
+
+
+    @Test
+    public void createIndex() throws JSQLParserException{
+        String sql="CREATE INDEX index_name2 ON p1.new_table (field2,field2) USING BTREE";
+        Statement parse = CCJSqlParserUtil.parse(new StringReader(sql));
+        System.out.println(parse);
+        sql="CREATE UNIQUE INDEX index_name5 ON pipe.new_table (index_field_1) USING HASH COMMENT 'hash comment'";
+        parse = CCJSqlParserUtil.parse(new StringReader(sql));
+        System.out.println(parse);
     }
 
 }

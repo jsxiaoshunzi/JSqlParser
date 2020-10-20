@@ -139,6 +139,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_BINARY: "BINARY">
 |   <K_BIT:"BIT">
 |   <K_BOTH:"BOTH">
+|   <K_BTREE:"BTREE">
 |   <K_BY:"BY">
 |   <K_CACHE: "CACHE">
 |   <K_BUFFERS: "BUFFERS">
@@ -210,6 +211,7 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_GROUP:"GROUP">
 |   <K_GROUPING:"GROUPING">
 |   <K_GROUP_CONCAT:"GROUP_CONCAT">
+|   <K_HASH:"HASH">
 |   <K_HAVING:"HAVING">
 |   <K_HIGH_PRIORITY : "HIGH_PRIORITY">
 |   <K_HOPPING:"HOPPING">
@@ -361,6 +363,9 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_XMLTEXT:"XMLTEXT">
 |   <K_YAML:"YAML">
 |   <K_ZONE:"ZONE">
+|   <K_LEFT_PARENTHESIS:"(">
+|   <K_RIGHT_PARENTHESIS:")">
+|   <K_EQUALS:"=">
 }
 
 TOKEN : /* Stuff */
@@ -1335,7 +1340,7 @@ String RelObjectNameWithoutValue() :
       | tk=<K_READ> | tk=<K_SCHEMA> | tk=<K_SIZE> | tk=<K_SESSION>
       | tk=<K_VIEW> | tk=<K_NOLOCK> | tk=<K_VALIDATE> | tk=<K_CYCLE> | tk=<K_OF> | tk=<K_EXCLUDE>
     /*| tk=<K_PLACING> | tk=<K_BOTH> | tk=<K_LEADING> | tk=<K_TRAILING> */
-      | tk=<K_FORMAT>
+      | tk=<K_FORMAT> | tk=<K_BTREE> | tk=<K_HASH>
       )
 
     { return tk.image; }
@@ -3913,7 +3918,7 @@ CreateIndex CreateIndex():
     Table table = null;
     List<Index.ColumnParams> colNames;
     //Token columnName;
-    Token using;
+    Token using = null;
     Index index = null;
     //String name = null;
     List<String> parameter = new ArrayList<String>();
@@ -3933,10 +3938,8 @@ CreateIndex CreateIndex():
     }
 
     <K_ON> table=Table()
-
-    [ <K_USING> using=<S_IDENTIFIER> {index.setUsing(using.image);} ]
-
     colNames = ColumnNamesWithParamsList()
+    [ <K_USING> (using=<K_BTREE> | <K_HASH>) {index.setUsing(using!=null?using.image:"BTREE");} ]
 
     [ tailParameter = CreateParameter() {} ]
 
@@ -4401,7 +4404,9 @@ List<String> CreateParameter():
 			|
             tk=<K_TYPE> { param.add(tk.image); }
 			|
-            tk=<K_COMMENT> { param.add(tk.image); }
+            tk=<K_COMMENT> { param.add(tk.image);}
+            [<K_EQUALS>]
+            tk=<S_CHAR_LITERAL> { param.add(tk.image); }
             |
             tk=<K_USING> { param.add(tk.image); }
             |
@@ -4475,6 +4480,21 @@ List<String> ColumnsNamesList():
          ( "," img=ColumnsNamesListItem() { retval.add(img); } )*
 
     ")"
+    {
+        return retval;
+    }
+}
+
+
+List<String> ColumnsNamesListWithOutParenthesis():
+{
+    List<String> retval = new ArrayList<String>();
+    String img = null;
+}
+{
+         img=ColumnsNamesListItem() { retval.add(img); }
+         ( "," img=ColumnsNamesListItem() { retval.add(img); } )*
+
     {
         return retval;
     }
@@ -4645,6 +4665,7 @@ AlterExpression AlterExpression():
     ForeignKeyIndex fkIndex = null;
     Index index = null;
     Table fkTable = null;
+    Table table = null;
     AlterExpression.ColumnDataType alterExpressionColumnDataType = null;
     AlterExpression.ColumnDropNotNull alterExpressionColumnDropNotNull = null;
     ReferentialAction.Action action = null;
@@ -4661,14 +4682,16 @@ AlterExpression AlterExpression():
                   |
             LOOKAHEAD(2) (
               (tk=<K_KEY> { alterExp.setUk(true); } | tk=<K_INDEX>)
-              sk3 = RelObjectName()
-              columnNames = ColumnsNamesList()
+              (tk=<S_IDENTIFIER> {sk3=tk.image; }| tk=<S_QUOTED_IDENTIFIER> {sk3=tk.image; })?
+
+              [ <K_LEFT_PARENTHESIS> columnNames=ColumnsNamesListWithOutParenthesis() <K_RIGHT_PARENTHESIS>  constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); } [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4);}] ]
+
+              [ constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); } <K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4);}  <K_LEFT_PARENTHESIS> columnNames=ColumnsNamesListWithOutParenthesis() <K_RIGHT_PARENTHESIS> ]
+
               {
                 index = new Index().withType(tk.image).withName(sk3).withColumnsNames(columnNames);
                 alterExp.setIndex(index);
               }
-              constraints=AlterExpressionConstraintState() { alterExp.setConstraints(constraints); }
-              [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }]
             )
                     |
             LOOKAHEAD(3) ( (LOOKAHEAD(2) <K_COLUMN>)?
@@ -4682,9 +4705,15 @@ AlterExpression AlterExpression():
                     ("," alterExpressionColumnDataType = AlterExpressionColumnDataType() { alterExp.addColDataType(alterExpressionColumnDataType); } )* ")"
             )
             |
-            ( <K_UNIQUE> ((<K_KEY> { alterExp.setUk(true); } | <K_INDEX>) (tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setUkName(tk.image); } )?
-                columnNames=ColumnsNamesList() { alterExp.setUkColumns(columnNames); }
-                [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4); }])
+            ( <K_UNIQUE> ( (<K_KEY> { alterExp.setUk(true); }  ) | <K_INDEX> )?
+             ((tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setUkName(tk.image); })?
+             [ <K_LEFT_PARENTHESIS> columnNames=ColumnsNamesListWithOutParenthesis() <K_RIGHT_PARENTHESIS>   [<K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4);}] ]
+             [ <K_USING> sk4=RelObjectName() { alterExp.addParameters("USING", sk4);}  <K_LEFT_PARENTHESIS> columnNames=ColumnsNamesListWithOutParenthesis() <K_RIGHT_PARENTHESIS> ]
+
+             {
+                alterExp.setUkColumns(columnNames);
+              }
+              )
             |
     //following two choices regarding foreign keys should be merged
             ( <K_FOREIGN> <K_KEY> columnNames=ColumnsNamesList() { alterExp.setFkColumns(columnNames); columnNames = null; }
@@ -4844,7 +4873,7 @@ AlterExpression AlterExpression():
       (<K_RENAME> {alterExp.setOperation(AlterOperation.RENAME);}
         (
           [<K_TO>]
-          (tk=<S_IDENTIFIER>    | tk=<S_QUOTED_IDENTIFIER>) { alterExp.setNewTableName(tk.image);}
+          table=Table() { alterExp.setNewTable(table);}
         )
       )
       |

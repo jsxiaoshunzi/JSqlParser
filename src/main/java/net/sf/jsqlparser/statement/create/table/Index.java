@@ -18,7 +18,7 @@ import java.util.Optional;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 
 public class Index {
-
+    //===索引类型==普通索引是空的，唯一索引：UNIQUE
     private String type;
     private String using;
     private List<ColumnParams> columns;

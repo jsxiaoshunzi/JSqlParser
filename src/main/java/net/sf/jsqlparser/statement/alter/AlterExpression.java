@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.ReferentialAction;
 import net.sf.jsqlparser.statement.ReferentialAction.Action;
 import net.sf.jsqlparser.statement.ReferentialAction.Type;
@@ -58,6 +59,8 @@ public class AlterExpression {
     private String commentText;
 
     private String newTableName;
+
+    private Table newTable;
 
     public String getCommentText() {
         return commentText;
@@ -669,5 +672,13 @@ public class AlterExpression {
 
     public void setNewTableName(String newTableName) {
         this.newTableName = newTableName;
+    }
+
+    public Table getNewTable() {
+        return newTable;
+    }
+
+    public void setNewTable(Table newTable) {
+        this.newTable = newTable;
     }
 }
