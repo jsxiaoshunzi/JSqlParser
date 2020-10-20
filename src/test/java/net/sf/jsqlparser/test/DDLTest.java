@@ -16,6 +16,8 @@ import net.sf.jsqlparser.statement.alter.Alter;
 import org.junit.Test;
 
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @Author: caoguoshun@jd.com
@@ -98,12 +100,23 @@ public class DDLTest {
 
     @Test
     public void createIndex() throws JSQLParserException{
-        String sql="CREATE INDEX index_name2 ON p1.new_table (field2,field2) USING BTREE";
-        Statement parse = CCJSqlParserUtil.parse(new StringReader(sql));
-        System.out.println(parse);
-        sql="CREATE UNIQUE INDEX index_name5 ON pipe.new_table (index_field_1) USING HASH COMMENT 'hash comment'";
-        parse = CCJSqlParserUtil.parse(new StringReader(sql));
-        System.out.println(parse);
+        List<String> sqlList=new ArrayList<>();
+        String sql=null;
+
+        sql="CREATE INDEX index_name2 ON p1.new_table (field2)";
+        sqlList.add(sql);
+        sql="CREATE UNIQUE INDEX index_name5 ON pipe.new_table (index_field_1) USING HASH COMMENT 'hash comment'  ALGORITHM INPLACE LOCK NONE";
+        sqlList.add(sql);
+
+        sqlList.forEach(temp->{
+            Statement parse = null;
+            try {
+                parse = CCJSqlParserUtil.parse(new StringReader(temp));
+            } catch (JSQLParserException e) {
+                e.printStackTrace();
+            }
+            System.out.println(parse);
+        });
     }
 
 }

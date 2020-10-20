@@ -366,6 +366,12 @@ TOKEN: /* SQL Keywords. prefixed with K_ to avoid name clashes */
 |   <K_LEFT_PARENTHESIS:"(">
 |   <K_RIGHT_PARENTHESIS:")">
 |   <K_EQUALS:"=">
+|   <K_COPY : "COPY">
+|   <K_INPLACE : "INPLACE">
+|   <K_NONE : "NONE">
+|   <K_SHARED : "SHARED">
+|   <K_EXCLUSIVE : "EXCLUSIVE">
+|   <K_LOCK:"LOCK">
 }
 
 TOKEN : /* Stuff */
@@ -4407,6 +4413,14 @@ List<String> CreateParameter():
             tk=<K_COMMENT> { param.add(tk.image);}
             [<K_EQUALS>]
             tk=<S_CHAR_LITERAL> { param.add(tk.image); }
+			|
+            tk=<K_ALGORITHM> { param.add(tk.image);}
+            [<K_EQUALS>]
+            (tk=<K_DEFAULT> { param.add(tk.image); } | tk=<K_INPLACE> { param.add(tk.image); } | tk=<K_COPY> { param.add(tk.image); })
+			|
+            tk=<K_LOCK> { param.add(tk.image);}
+            [<K_EQUALS>]
+            (tk=<K_DEFAULT> { param.add(tk.image); } | tk=<K_NONE> { param.add(tk.image); }| tk=<K_SHARED>  { param.add(tk.image); }| tk=<K_EXCLUSIVE> { param.add(tk.image); })
             |
             tk=<K_USING> { param.add(tk.image); }
             |
@@ -4419,7 +4433,7 @@ List<String> CreateParameter():
             tk=<K_FIRST> { param.add(tk.image); }
             |
 	    tk="::" colDataType = ColDataType() { param.add(tk.image); param.add(colDataType.toString()); }
-        )
+        )+
     {return param;}
 }
 
