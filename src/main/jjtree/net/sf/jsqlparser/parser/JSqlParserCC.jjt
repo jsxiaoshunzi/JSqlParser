@@ -4002,7 +4002,7 @@ ColumnDefinition ColumnDefinition(): {
 
     colDataType = ColDataType()
 
-    ( parameter=CreateParameter() { columnSpecs.addAll(parameter); } )*
+    ( parameter=CreateParameterColumn() { columnSpecs.addAll(parameter); } )*
 
     {
         coldef = new ColumnDefinition();
@@ -4123,12 +4123,13 @@ CreateTable CreateTable():
 
             (
                 LOOKAHEAD(3) (
-                    tk=<K_INDEX>
+                    tk=<K_INDEX> {idxSpec.clear();}
                         sk3=RelObjectName()
                         /* colNames=ColumnsNamesList() */
                         colNames = ColumnNamesWithParamsList()
+                         ( parameter=CreateParameter() { idxSpec.addAll(parameter); } )*
                         {
-                            index = new Index().withType(tk.image).withName(sk3).withColumns(colNames);
+                            index = new Index().withType(tk.image).withName(sk3).withColumns(colNames).withIndexSpec(idxSpec);
                             indexes.add(index);
                         }
                 )
@@ -4136,11 +4137,12 @@ CreateTable CreateTable():
                 LOOKAHEAD(3) (
                     {
                         index = new NamedConstraint();
+                        idxSpec.clear();
                     }
                     [<K_CONSTRAINT> sk3=RelObjectName() {index.setName(sk3);} ]
 
                     (tk=<K_PRIMARY> tk2=<K_KEY> {index.setType(tk.image + " " + tk2.image);}
-                     | tk=<K_UNIQUE> [ tk2=<K_KEY> ] {index.setType(tk.image + (tk2!=null?" " + tk2.image:""));}
+                     | tk=<K_UNIQUE> [ tk2=<K_KEY> | tk2=<K_INDEX>] {index.setType(tk.image + (tk2!=null?" " + tk2.image:""));}
                      )
                         /* colNames=ColumnsNamesList() */
                         colNames = ColumnNamesWithParamsList()
@@ -4151,7 +4153,7 @@ CreateTable CreateTable():
                         }
                 )
                 |
-                LOOKAHEAD(3) ( {tk=null;}
+                LOOKAHEAD(3) ( {tk=null;idxSpec.clear();}
                      [ tk=<K_UNIQUE> ] [ tk3=<K_FULLTEXT> ] [ tk2=<K_KEY> | tk2=<K_INDEX> ]
                         sk3=RelObjectName()
                         /* colNames=ColumnsNamesList() */
@@ -4456,6 +4458,7 @@ List<String> CreateParameter():
             (tk=<K_DEFAULT> { param.add(tk.image); } | tk=<K_NONE> { param.add(tk.image); }| tk=<K_SHARED>  { param.add(tk.image); }| tk=<K_EXCLUSIVE> { param.add(tk.image); })
             |
             tk=<K_USING> { param.add(tk.image); }
+            (tk=<K_BTREE> { param.add(tk.image); } | tk=<K_HASH> { param.add(tk.image); })
             |
             tk=<K_COLLATE> { param.add(tk.image); }
             |
@@ -4471,7 +4474,120 @@ List<String> CreateParameter():
         )+
     {return param;}
 }
-
+List<String> CreateParameterColumn():
+{
+    String retval = "";
+    Token tk = null;
+    Token tk2 = null;
+    StringBuilder identifier = new StringBuilder("");
+    Expression exp = null;
+    List<String> param = new ArrayList<String>();
+    ColDataType colDataType;
+}
+{
+        (
+            (((tk=<S_IDENTIFIER> | tk=<S_QUOTED_IDENTIFIER>) { identifier.append(tk.image); }
+                ["." (tk2=<S_IDENTIFIER> | tk2=<S_QUOTED_IDENTIFIER>) { identifier.append("."); identifier.append(tk2.image); }])
+                { param.add(identifier.toString()); })
+            |
+            tk=<K_NULL> { param.add(tk.image); }
+            |
+            tk=<K_NOT> { param.add(tk.image); }
+            |
+            tk=<K_PRIMARY> { param.add(tk.image); }
+            |
+            tk=<K_DEFAULT> { param.add(tk.image); }
+            |
+            tk=<K_FOREIGN> { param.add(tk.image); }
+            |
+            tk=<K_REFERENCES> { param.add(tk.image); }
+            |
+            tk=<K_KEY> { param.add(tk.image); }
+            |
+            tk=<S_CHAR_LITERAL> { param.add(tk.image); }
+            |
+              ("+" {retval = "+";} | "-" {retval = "-";})?
+              (
+               tk=<S_LONG> { retval += tk.image; }
+               |
+               tk=<S_DOUBLE> { retval += tk.image; }
+              )
+              { param.add(retval); }
+            |
+            tk=<K_ON> { param.add(tk.image); }
+            |
+            tk=<K_COMMIT> { param.add(tk.image); }
+            |
+            tk=<K_ROWS> { param.add(tk.image); }
+            |
+            tk=<K_UNIQUE> { param.add(tk.image); }
+            |
+            tk=<K_CASCADE> { param.add(tk.image); }
+            |
+            tk=<K_DELETE> { param.add(tk.image); }
+            |
+            tk=<K_UPDATE> { param.add(tk.image); }
+            |
+            tk=<K_TIME_KEY_EXPR> { param.add(new TimeKeyExpression(tk.image).toString()); }
+            |
+            "=" { param.add("="); }
+            |
+            LOOKAHEAD(3) <K_USING> <K_INDEX> <K_TABLESPACE> retval=RelObjectName() { param.add("USING"); param.add("INDEX"); param.add("TABLESPACE"); param.add(retval); }
+            |
+            <K_TABLESPACE> retval=RelObjectName() { param.add("TABLESPACE"); param.add(retval); }
+            |
+            retval=AList() { param.add(retval); }
+            |
+            <K_CHECK>  ("(" exp = Expression() ")") { param.add("CHECK"); param.add("(" + exp.toString() + ")");}
+            |
+            tk=<K_CONSTRAINT> { param.add(tk.image); }
+            |
+            tk=<K_WITH> { param.add(tk.image); }
+            |
+            tk=<K_EXCLUDE> { param.add(tk.image); }
+            |
+            tk=<K_WHERE> { param.add(tk.image); }
+			|
+            tk=<K_UNSIGNED> { param.add(tk.image); }
+            |
+            tk=<K_TEMP> { param.add(tk.image); }
+            |
+            tk=<K_TEMPORARY> { param.add(tk.image); }
+			|
+            tk=<K_PARTITION> { param.add(tk.image); }
+			|
+            tk=<K_BY> { param.add(tk.image); }
+			|
+            tk=<K_IN> { param.add(tk.image); }
+			|
+            tk=<K_TYPE> { param.add(tk.image); }
+			|
+            tk=<K_COMMENT> { param.add(tk.image);}
+            [<K_EQUALS>]
+            tk=<S_CHAR_LITERAL> { param.add(tk.image); }
+			|
+            tk=<K_ALGORITHM> { param.add(tk.image);}
+            [<K_EQUALS>]
+            (tk=<K_DEFAULT> { param.add(tk.image); } | tk=<K_INPLACE> { param.add(tk.image); } | tk=<K_COPY> { param.add(tk.image); })
+			|
+            tk=<K_LOCK> { param.add(tk.image);}
+            [<K_EQUALS>]
+            (tk=<K_DEFAULT> { param.add(tk.image); } | tk=<K_NONE> { param.add(tk.image); }| tk=<K_SHARED>  { param.add(tk.image); }| tk=<K_EXCLUSIVE> { param.add(tk.image); })
+            |
+            tk=<K_COLLATE> { param.add(tk.image); }
+            |
+            tk=<K_ASC> { param.add(tk.image); }
+	        |
+            tk=<K_DESC> { param.add(tk.image); }
+            |
+            tk=<K_FIRST> { param.add(tk.image); }
+            |
+            tk=<K_AFTER> { param.add(tk.image); }    (tk=<S_QUOTED_IDENTIFIER> { param.add(tk.image); } | tk=<S_IDENTIFIER> { param.add(tk.image); })
+            |
+	    tk="::" colDataType = ColDataType() { param.add(tk.image); param.add(colDataType.toString()); }
+        )+
+    {return param;}
+}
 // row_movement_clause https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_7002.htm#i2204697
 RowMovement RowMovement():
 {

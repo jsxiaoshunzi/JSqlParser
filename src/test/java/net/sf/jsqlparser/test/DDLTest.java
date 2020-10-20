@@ -124,6 +124,31 @@ public class DDLTest {
     }
 
 
+
+    /**
+     * 字段上带约束的表创建
+     */
+    @Test
+    public void  createTableWithConstraints() throws JSQLParserException {
+        String sql="CREATE TABLE `new_table25`\n" +
+                "(`id` int NOT NULL PRIMARY KEY  ,\n" +
+                "`field1` varchar (255) NOT NULL DEFAULT 'field1' COMMENT 'comment nothing else' UNIQUE KEY ,\n" +
+                "`field2` varchar (255)  NULL  DEFAULT  NULL UNIQUE COMMENT 'comment nothing else2'  ,\n" +
+                "`field3` varchar (255)  NULL  DEFAULT  NULL  COMMENT 'comment nothing else2' UNIQUE  ,\n" +
+                "`field4` varchar (255)  NULL  DEFAULT  NULL  COMMENT 'comment nothing else2'  ,\n" +
+                "`index_field_1` bigint NULL UNIQUE KEY,\n" +
+                "`index_filed_2` bigint NULL,\n" +
+                "UNIQUE KEY  `index_1` (`index_field_1`) USING BTREE,\n" +
+                "UNIQUE KEY  `index_3` (`index_field_1`),\n" +
+                "UNIQUE  (`index_field_1`) USING BTREE,\n" +
+                "UNIQUE  KEY(`index_field_1`) USING HASH COMMENT 'hash',\n" +
+                "UNIQUE INDEX (`index_field_1`) COMMENT 'ssss',\n" +
+                "INDEX `index_2` (`index_filed_2`, `index_field_1`) USING BTREE ) COMMENT 'table comment'";
+        Statement parse = CCJSqlParserUtil.parse(new StringReader(sql));
+        System.out.println(parse);
+    }
+
+
     @Test
     public void createIndex() throws JSQLParserException{
         List<String> sqlList=new ArrayList<>();
