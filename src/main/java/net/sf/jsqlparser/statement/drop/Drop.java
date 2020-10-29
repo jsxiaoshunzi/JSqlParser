@@ -25,7 +25,7 @@ public class Drop implements Statement {
     private Table name;
     private List<String> parameters;
     private boolean ifExists = false;
-
+    private String indexName;
     @Override
     public void accept(StatementVisitor statementVisitor) {
         statementVisitor.visit(this);
@@ -105,5 +105,13 @@ public class Drop implements Statement {
         List<String> collection = Optional.ofNullable(getParameters()).orElseGet(ArrayList::new);
         collection.addAll(parameters);
         return this.withParameters(collection);
+    }
+
+    public String getIndexName() {
+        return indexName;
+    }
+
+    public void setIndexName(String indexName) {
+        this.indexName = indexName;
     }
 }

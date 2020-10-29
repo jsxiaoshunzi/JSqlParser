@@ -170,4 +170,12 @@ public class DDLTest {
         });
     }
 
+
+    @Test
+    public void dropIndex() throws JSQLParserException{
+        //DROP INDEX `PRIMARY` ON new_table
+        String sql="drop INDEX `index_name8` on  new_table;";
+        Statement parse = CCJSqlParserUtil.parse(new StringReader(sql));
+        System.out.println(parse);
+    }
 }

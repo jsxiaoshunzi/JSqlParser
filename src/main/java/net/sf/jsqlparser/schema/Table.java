@@ -241,4 +241,8 @@ public class Table extends ASTNodeAccessImpl implements FromItem, MultiPartName 
         this.setSqlServerHints(sqlServerHints);
         return this;
     }
+
+    public List<String> getPartItems() {
+        return partItems;
+    }
 }

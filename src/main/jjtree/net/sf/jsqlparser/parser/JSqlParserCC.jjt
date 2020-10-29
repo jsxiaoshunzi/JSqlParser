@@ -4679,6 +4679,7 @@ Drop Drop():
 {
     Drop drop = new Drop();
     Token tk = null;
+    String indexName=null;
     Table name;
     List<String> dropArgs = new ArrayList<String>();
 }
@@ -4689,7 +4690,7 @@ Drop Drop():
         |
         tk=<K_TABLE>
         |
-        tk=<K_INDEX>
+        tk=<K_INDEX> indexName=RelObjectName()
         |
         tk=<K_VIEW>
         |
@@ -4700,11 +4701,12 @@ Drop Drop():
     { drop.setType(tk.image); }
 
     [ LOOKAHEAD(2) <K_IF> <K_EXISTS> {drop.setIfExists(true);} ]
-
+    [ <K_ON> ]
     name = Table() { drop.setName(name); }
     ((tk=<S_IDENTIFIER> | tk=<K_CASCADE> | tk=<K_RESTRICT> ) { dropArgs.add(tk.image); })*
 
     {
+        drop.setIndexName(indexName);
         if (dropArgs.size() > 0)
             drop.setParameters(dropArgs);
         return drop;
