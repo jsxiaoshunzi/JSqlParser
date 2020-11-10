@@ -23,7 +23,7 @@ public class Index {
     private String using;
     private List<ColumnParams> columns;
     private final List<String> name = new ArrayList<>();
-    private List<String> idxSpec;
+    private List<String> idxSpec= new ArrayList<>();
 
     public List<String> getColumnsNames() {
         return columns.stream()
@@ -100,11 +100,14 @@ public class Index {
 
     public void setName(String name) {
         this.name.clear();
-        this.name.add(name);
+        if (!(name==null || name.equals(""))) {
+            this.name.add(name);
+        }
     }
 
     public void setName(List<String> name) {
         this.name.clear();
+
         this.name.addAll(name);
     }
 
@@ -125,7 +128,7 @@ public class Index {
     }
 
     public void setIndexSpec(List<String> idxSpec) {
-        this.idxSpec = idxSpec;
+        this.idxSpec.addAll(idxSpec);
     }
 
     public Index withIndexSpec(List<String> idxSpec) {

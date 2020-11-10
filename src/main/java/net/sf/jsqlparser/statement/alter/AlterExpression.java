@@ -62,6 +62,11 @@ public class AlterExpression {
 
     private Table newTable;
 
+    private boolean renameTable;
+    private boolean renameIndex;
+    private boolean renameColumn;
+
+
     public String getCommentText() {
         return commentText;
     }
@@ -686,5 +691,29 @@ public class AlterExpression {
 
     public void setNewTable(Table newTable) {
         this.newTable = newTable;
+    }
+
+    public boolean isRenameTable() {
+        return renameTable;
+    }
+
+    public void setRenameTable(boolean renameTable) {
+        this.renameTable = renameTable;
+    }
+
+    public boolean isRenameIndex() {
+        return renameIndex;
+    }
+
+    public void setRenameIndex(boolean renameIndex) {
+        this.renameIndex = renameIndex;
+    }
+
+    public boolean isRenameColumn() {
+        return renameColumn;
+    }
+
+    public void setRenameColumn(boolean renameColumn) {
+        this.renameColumn = renameColumn;
     }
 }

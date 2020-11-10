@@ -91,6 +91,8 @@ public class DDLTest {
     public void alterTableRename() throws JSQLParserException{
         String sql="ALTER TABLE `time_check` \n" +
                 "RENAME  `time_check_new` ,\n" +
+                "RENAME INDEX old_index_name TO new_index_name,\n" +
+                "RENAME COLUMN old_col_name TO new_col_name,\n" +
                 "COMMENT '我的注释'";
         Statement parse = CCJSqlParserUtil.parse(new StringReader(sql));
         System.out.println(parse);
