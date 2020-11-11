@@ -175,9 +175,20 @@ public class DDLTest {
 
     @Test
     public void dropIndex() throws JSQLParserException{
-        //DROP INDEX `PRIMARY` ON new_table
-        String sql="drop INDEX `index_name8` on  new_table;";
-        Statement parse = CCJSqlParserUtil.parse(new StringReader(sql));
-        System.out.println(parse);
+        List<String> sqlList=new ArrayList<>();
+        String sql=null;
+        sql="DROP INDEX `index_2` ON pipe.new_table1 ALGORITHM INPLACE LOCK NONE";
+        sqlList.add(sql);
+        sql="DROP INDEX `PRIMARY` ON pipe.new_table1 ALGORITHM COPY LOCK NONE";
+        sqlList.add(sql);
+        sqlList.forEach(temp->{
+            Statement parse = null;
+            try {
+                parse = CCJSqlParserUtil.parse(new StringReader(temp));
+            } catch (JSQLParserException e) {
+                e.printStackTrace();
+            }
+            System.out.println(parse);
+        });
     }
 }

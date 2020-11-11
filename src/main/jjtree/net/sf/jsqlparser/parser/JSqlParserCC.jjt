@@ -4408,6 +4408,8 @@ List<String> CreateParameter():
             |
             tk=<K_CASCADE> { param.add(tk.image); }
             |
+            tk=<K_RESTRICT> { param.add(tk.image); }
+            |
             tk=<K_DELETE> { param.add(tk.image); }
             |
             tk=<K_UPDATE> { param.add(tk.image); }
@@ -4704,7 +4706,7 @@ Drop Drop():
     [ LOOKAHEAD(2) <K_IF> <K_EXISTS> {drop.setIfExists(true);} ]
     [ <K_ON> ]
     name = Table() { drop.setName(name); }
-    ((tk=<S_IDENTIFIER> | tk=<K_CASCADE> | tk=<K_RESTRICT> ) { dropArgs.add(tk.image); })*
+    [ dropArgs = CreateParameter() ]
 
     {
         drop.setIndexName(indexName);
