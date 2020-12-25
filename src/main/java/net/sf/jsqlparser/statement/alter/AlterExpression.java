@@ -652,14 +652,30 @@ public class AlterExpression {
 
         private final String columnName;
         private final boolean withNot;
+        private final boolean isNull;
+        private final boolean isDefault;
 
         public ColumnDropNotNull(String columnName) {
             this(columnName, false);
         }
 
         public ColumnDropNotNull(String columnName, boolean withNot) {
+           this(columnName, withNot, false, false);
+        }
+
+        public ColumnDropNotNull(String columnName, boolean withNot, boolean isNull, boolean isDefault) {
             this.columnName = columnName;
             this.withNot = withNot;
+            this.isNull = isNull;
+            this.isDefault = isDefault;
+        }
+
+        public boolean isNull() {
+            return isNull;
+        }
+
+        public boolean isDefault() {
+            return isDefault;
         }
 
         public String getColumnName() {

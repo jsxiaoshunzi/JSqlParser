@@ -4771,14 +4771,16 @@ AlterExpression.ColumnDropNotNull AlterExpressionColumnDropNotNull():
     ColDataType dataType = null;
     List<String> columnSpecs = null;
     List<String> parameter = null;
+    boolean isNull = false;
+    boolean isDefault = false;
 }
 {
     columnName = RelObjectName()
     <K_DROP>
     (<K_NOT> { withNot = true; } )?
-    <K_NULL>
+    (<K_NULL> {isNull=true;} | <K_DEFAULT> {isDefault=true;})
     {
-        return new AlterExpression.ColumnDropNotNull(columnName, withNot);
+        return new AlterExpression.ColumnDropNotNull(columnName, withNot, isNull,isDefault);
     }
 }
 

@@ -191,4 +191,24 @@ public class DDLTest {
             System.out.println(parse);
         });
     }
+
+    @Test
+    public void alterColumnSetDefault() throws JSQLParserException {
+        String sql="ALTER TABLE `new_tabless`\n" +
+                "ALTER COLUMN `id` SET DEFAULT 100" ;
+
+        Statement parse = CCJSqlParserUtil.parse(new StringReader(sql));
+        System.out.println(parse);
+
+    }
+
+    @Test
+    public void alterColumnDropDefault() throws JSQLParserException {
+        String sql="ALTER TABLE `new_tabless`\n" +
+                "ALTER COLUMN `id` DROP DEFAULT";
+
+        Statement parse = CCJSqlParserUtil.parse(new StringReader(sql));
+        System.out.println(parse);
+
+    }
 }
